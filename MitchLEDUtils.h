@@ -7,7 +7,7 @@
 
 enum MitchColor { RED, GREEN, BLUE, CYAN, MAGENTA };
 
-namespace L {
+namespace HPR {
   class MitchLED {
     public:
       void initLED();

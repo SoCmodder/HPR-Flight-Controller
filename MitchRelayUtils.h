@@ -4,7 +4,7 @@
 #define RELAY_IN_1 5
 #define RELAY_IN_2 6
 
-namespace N {
+namespace HPR {
   class MitchRelay {
     public:
       void initRelay();

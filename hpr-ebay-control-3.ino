@@ -7,9 +7,11 @@
 int cycles = 0;
 int CYCLE_MAX = 10;
 
-using namespace L;
+using namespace HPR;
 
-L::MitchLED led;
+HPR::MitchLED led;
+HPR::MitchSD sd;
+HPR::MitchAlt alt;
 
 /***********************************************
  **************** SETUP *************************
@@ -19,14 +21,14 @@ void setup() {
   while (!Serial) delay(10);
 
   led.initLED();
-  initRTC();
-  initSD();
-  relay.initRelay();
-  initBNO();
-  initMPL();
-  initDPS();
+  sd.initRTC();
+  sd.initSD();
+  alt.initRelay();
+  alt.initBNO();
+  alt.initMPL();
+  alt.initDPS();
 
-  STARTING_ALT = getAltAverage();   
+  alt.STARTING_ALT = alt.getAltAverage();   
   delay(500);
 
   led.blinkFast(3, GREEN);
@@ -37,29 +39,29 @@ void setup() {
  **************** LOOP *************************
  ***********************************************/
 void loop() {
-  CURRENT_ALT = getAltAverage(); // average of last NUMBER_TO_AVERAGE readings
-  RELATIVE_ALT = getRelativeAltAverage();
+  alt.CURRENT_ALT = alt.getAltAverage(); // average of last NUMBER_TO_AVERAGE readings
+  alt.RELATIVE_ALT = alt.getRelativeAltAverage();
 
   if (cycles < CYCLE_MAX) {
-    writeDataLineBlocking("Current Alt: " + String(CURRENT_ALT));
-    writeDataLineBlocking("Relative Alt: " + String(RELATIVE_ALT));
+    sd.writeDataLineBlocking("Current Alt: " + String(alt.CURRENT_ALT));
+    sd.writeDataLineBlocking("Relative Alt: " + String(alt.RELATIVE_ALT));
     cycles++;
   }
   if (cycles == CYCLE_MAX) {
-    closeFile();
+    sd.closeFile();
     led.lightOn(CYAN);
     while(1);
   }
 
-  if (CURRENT_ALT > MAX_ALT) {
+  if (alt.CURRENT_ALT > alt.MAX_ALT) {
     // update max altitude
-    MAX_ALT = CURRENT_ALT;
-  } else if (shouldDeployChute()) {
+    alt.MAX_ALT = alt.CURRENT_ALT;
+  } else if (alt.shouldDeployChute()) {
     // chute deployment altitude reached
-    deployChute();
+    alt.deployChute();
   }
 
-  printDPSAltitudeData();
+  alt.printDPSAltitudeData();
   //printMPLAltitudeData();
 
   delay(200);

@@ -1,7 +1,7 @@
 #include <arduino.h>
 #include "MitchRelayUtils.h"
 
-using namespace N;
+using namespace HPR;
 
 void MitchRelay::initRelay() {
   pinMode(RELAY_IN_1, OUTPUT);
@@ -13,6 +13,7 @@ void MitchRelay::initRelay() {
 **/  
 void MitchRelay::relayOn(int relayPin) {
   digitalWrite(relayPin, LOW);
+  delay(5000);
 }
 
 /** 
@@ -20,4 +21,5 @@ void MitchRelay::relayOn(int relayPin) {
 **/  
 void MitchRelay::relayOff(int relayPin) {
   digitalWrite(relayPin, HIGH);
+  delay(200);
 }
