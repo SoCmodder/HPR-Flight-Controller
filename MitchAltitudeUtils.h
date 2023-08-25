@@ -4,9 +4,12 @@
 #include "MitchRelayUtils.h"
 
 #define SEA_LEVEL_HPA 1013.25
-#define NUMBER_TO_AVERAGE 10
+#define NUMBER_TO_AVERAGE 5
 #define CHUTE_DEPLOYMENT_ALT 121.92 // 400 ft
 
+using namespace N;
+
+N::MitchRelay relay;
 Adafruit_DPS310 dps;
 Adafruit_MPL3115A2 mpl;
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
@@ -23,9 +26,10 @@ double xPos = 0, yPos = 0, headingVel = 0;
 float STARTING_ALT = 0;
 float MAX_ALT = 0;
 float CURRENT_ALT = 0;
+float RELATIVE_ALT = 0;
 bool APOGEE = false;
 
-void initBNO() {
+inline void initBNO() {
   if (!bno.begin()) {
     Serial.print("No BNO055 detected");
     while (1);
@@ -71,6 +75,11 @@ float getAltAverage() {
   return sum / NUMBER_TO_AVERAGE;
 }
 
+float getRelativeAltAverage() {
+  return getAltAverage() - STARTING_ALT;  
+}
+
+/** TODO: Check acceleration and vector as well */
 bool shouldDeployChute() {
   bool deploy = false;
   float altDrop = MAX_ALT - CURRENT_ALT;
@@ -83,8 +92,8 @@ bool shouldDeployChute() {
 }
 
 void deployChute() {
-  relayOn(RELAY_IN_1);
-  relayOff(RELAY_IN_1);
+  relay.relayOn(RELAY_IN_1);
+  relay.relayOff(RELAY_IN_1);
 }
 
 void printDPSAltitudeData() {
@@ -92,6 +101,8 @@ void printDPSAltitudeData() {
   Serial.print(String(STARTING_ALT));
   Serial.print(", Current Alt: ");
   Serial.print(String(CURRENT_ALT));
+  Serial.print(", Relative Alt: ");
+  Serial.print(String(RELATIVE_ALT));
   Serial.print(", Max Alt: ");
   Serial.print(String(MAX_ALT));
   Serial.println("");

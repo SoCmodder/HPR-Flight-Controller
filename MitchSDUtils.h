@@ -66,7 +66,6 @@ void initSD() {
     Serial.println("Card failed, or not present");
     while (1);
   }
-
   // try to open the file for writing
   openFile();
   writeLogHeader();
@@ -75,12 +74,13 @@ void initSD() {
 }
 
 void writeDataLineBlocking(String data) {
-  // TODO: check file size
+  /** TODO: check file size
   //       if file size greater than max write size minus some amount
   //       close file
   //       delay
   //       open file
   //       repeat 
+  */
   if(!file.println(data)) {
     Serial.println("Failed to write data to file...");  
   }
