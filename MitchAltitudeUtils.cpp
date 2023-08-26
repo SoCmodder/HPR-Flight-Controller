@@ -72,7 +72,7 @@ float MitchAlt::getAltAverage() {
 }
 
 float MitchAlt::getRelativeAltAverage() {
-  return getAltAverage() - STARTING_ALT;  
+  return readDPSAlt() - STARTING_ALT;  
 }
 
 /** TODO: Check acceleration and vector as well */
