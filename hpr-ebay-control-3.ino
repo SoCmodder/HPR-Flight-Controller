@@ -2,9 +2,16 @@
 #include "MitchAltitudeUtils.h"
 #include "MitchSDUtils.h"
 #include "MitchLEDUtils.h"
+#include "MitchRelayUtils.h"
+
+using namespace HPR;
+
+HPR::MitchLED led;
+HPR::MitchSD sd;
+HPR::MitchAlt alt;
 
 int cycles = 0;
-int CYCLE_MAX = 10;
+int CYCLE_MAX = 20;
 
 /***********************************************
  **************** SETUP *************************
@@ -13,18 +20,18 @@ void setup() {
   Serial.begin(9600);
   while (!Serial) delay(10);
 
-  initLED();
-  initRTC();
-  initSD();
-  initRelay();
-  initBNO();
-  initMPL();
-  initDPS();
+  led.initLED();
+  sd.initRTC();
+  sd.initSD();
+  alt.initRelay();
+  alt.initBNO();
+  alt.initMPL();
+  alt.initDPS();
 
-  STARTING_ALT = readDPSAlt();   
+  alt.STARTING_ALT = alt.getAltAverage();   
   delay(500);
 
-  blinkFast(3, GREEN);
+  led.blinkFast(3, GREEN);
   delay(200);
 }
 
@@ -32,28 +39,32 @@ void setup() {
  **************** LOOP *************************
  ***********************************************/
 void loop() {
-  CURRENT_ALT = getAltAverage(); // average of last NUMBER_TO_AVERAGE readings
+  alt.CURRENT_ALT = alt.getAltAverage(); // average of last NUMBER_TO_AVERAGE readings
+  alt.RELATIVE_ALT = alt.getRelativeAltAverage();
 
   if (cycles < CYCLE_MAX) {
-    writeDataLineBlocking("Current Alt: " + String(CURRENT_ALT));
+    sd.writeDataLineBlocking("Current Alt: " + String(alt.CURRENT_ALT));
+    sd.writeDataLineBlocking("Relative Alt: " + String(alt.RELATIVE_ALT));
     cycles++;
   }
   if (cycles == CYCLE_MAX) {
-    closeFile();
-    lightOn(CYAN);
+    sd.closeFile();
+    led.lightOn(RED);
+    alt.deployChute();
+    //sd.writeDataLineBlocking("Chute Deployed");
     while(1);
   }
 
-  if (CURRENT_ALT > MAX_ALT) {
+  if (alt.CURRENT_ALT > alt.MAX_ALT) {
     // update max altitude
-    MAX_ALT = CURRENT_ALT;
-  } else if (shouldDeployChute()) {
+    alt.MAX_ALT = alt.CURRENT_ALT;
+  } else if (alt.shouldDeployChute()) {
     // chute deployment altitude reached
-    deployChute();
+    alt.deployChute();
   }
 
-  printDPSAltitudeData();
-  printMPLAltitudeData();
+  alt.printDPSAltitudeData();
+  //printMPLAltitudeData();
 
   delay(200);
 }
