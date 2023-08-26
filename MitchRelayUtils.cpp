@@ -6,6 +6,8 @@ using namespace HPR;
 void MitchRelay::initRelay() {
   pinMode(RELAY_IN_1, OUTPUT);
   digitalWrite(RELAY_IN_1, HIGH);
+  pinMode(RELAY_IN_2, OUTPUT);
+  digitalWrite(RELAY_IN_2, HIGH);
 }
 
 /** 
@@ -21,5 +23,5 @@ void MitchRelay::relayOn(int relayPin) {
 **/  
 void MitchRelay::relayOff(int relayPin) {
   digitalWrite(relayPin, HIGH);
-  delay(200);
+  delay(1000);
 }

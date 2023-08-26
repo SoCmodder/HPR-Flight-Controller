@@ -4,14 +4,14 @@
 #include "MitchLEDUtils.h"
 #include "MitchRelayUtils.h"
 
-int cycles = 0;
-int CYCLE_MAX = 10;
-
 using namespace HPR;
 
 HPR::MitchLED led;
 HPR::MitchSD sd;
 HPR::MitchAlt alt;
+
+int cycles = 0;
+int CYCLE_MAX = 20;
 
 /***********************************************
  **************** SETUP *************************
@@ -49,7 +49,9 @@ void loop() {
   }
   if (cycles == CYCLE_MAX) {
     sd.closeFile();
-    led.lightOn(CYAN);
+    led.lightOn(RED);
+    alt.deployChute();
+    //sd.writeDataLineBlocking("Chute Deployed");
     while(1);
   }
 

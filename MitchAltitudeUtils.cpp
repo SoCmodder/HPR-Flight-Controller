@@ -88,8 +88,8 @@ bool MitchAlt::shouldDeployChute() {
 }
 
 void MitchAlt::deployChute() {
-  relay.relayOn(RELAY_IN_1);
-  relay.relayOff(RELAY_IN_1);
+  relay.relayOn(RELAY_IN_2);
+  relay.relayOff(RELAY_IN_2);
 }
 
 void MitchAlt::printDPSAltitudeData() {
