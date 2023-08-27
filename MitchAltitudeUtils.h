@@ -14,20 +14,14 @@ namespace HPR {
       float RELATIVE_ALT = 0;
       bool APOGEE = false;
 
-      void initBNO();
-      void initMPL();
       void initDPS();
       void initRelay();
       float readDPSAlt();
-      float readMPLAlt();
       float getAltAverage();
       float getRelativeAltAverage();
       bool shouldDeployChute();
       void deployChute();
       void printDPSAltitudeData();
-      void printMPLAltitudeData();
-      void printLinearAccelerationData();
-      void printOrientationData();
   };
 }
 

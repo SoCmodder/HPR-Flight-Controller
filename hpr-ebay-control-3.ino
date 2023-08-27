@@ -24,7 +24,7 @@ void setup() {
   sd.initRTC();
   sd.initSD();
   alt.initRelay();
-  alt.initBNO();
+  //alt.initBNO();
   //alt.initMPL();
   alt.initDPS();
 
