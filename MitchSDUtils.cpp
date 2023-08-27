@@ -10,19 +10,16 @@ File file;
 
 using namespace HPR;
 
-void MitchSD::closeFile() {
-  file.close();
-  delay(200);
-}
-
-void MitchSD::openFile() {
-  file = SD.open(SD_FILE_NAME, FILE_WRITE);
-  if (!file) {
-    Serial.print("error opening ");
-    Serial.println(SD_FILE_NAME);
+void MitchSD::initSD() {
+  if (!SD.begin(SD_CS_PIN)) {
+    Serial.println("Card failed, or not present");
     while (1);
   }
-  delay(200);
+  // try to open the file for writing
+  openFile();
+  writeLogHeader();
+  closeFile();
+  Serial.println("SD OK!");
 }
 
 void MitchSD::initRTC() {
@@ -38,7 +35,21 @@ void MitchSD::initRTC() {
   //we don't need the 32K Pin, so disable it
   rtc.disable32K();
   Serial.println("RTC OK!");
-  delay(500);
+}
+
+void MitchSD::closeFile() {
+  file.close();
+  delay(200);
+}
+
+void MitchSD::openFile() {
+  file = SD.open(SD_FILE_NAME, FILE_WRITE);
+  if (!file) {
+    Serial.print("error opening ");
+    Serial.println(SD_FILE_NAME);
+    while (1);
+  }
+  delay(200);
 }
 
 void MitchSD::writeLogHeader() {
@@ -62,16 +73,9 @@ void MitchSD::writeLogHeader() {
   delay(200);
 }
 
-void MitchSD::initSD() {
-  if (!SD.begin(SD_CS_PIN)) {
-    Serial.println("Card failed, or not present");
-    while (1);
-  }
-  // try to open the file for writing
-  openFile();
-  writeLogHeader();
-  Serial.println("SD OK!");
-  delay(500);
+String MitchSD::getTimeStamp() {
+  DateTime now = rtc.now();
+  return String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second());  
 }
 
 void MitchSD::writeDataLineBlocking(String data) {

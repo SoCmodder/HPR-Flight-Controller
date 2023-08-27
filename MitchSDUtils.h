@@ -7,12 +7,13 @@
 namespace HPR {
   class MitchSD {
     public:
+      void initRTC();
+      void initSD();
       void closeFile();
       void openFile();
-      void initRTC();
       void writeLogHeader();
-      void initSD();
       void writeDataLineBlocking(String data);
+      String getTimeStamp();
   };
 }
 

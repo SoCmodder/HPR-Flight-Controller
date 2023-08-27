@@ -1,16 +1,24 @@
-#include <Wire.h>
-#include "MitchAltitudeUtils.h"
+#include <Adafruit_MPL3115A2.h>
 #include "MitchSDUtils.h"
 #include "MitchLEDUtils.h"
+#include "MitchRelayUtils.h"
 
 using namespace HPR;
 
-HPR::MitchLED led;
-HPR::MitchSD sd;
-HPR::MitchAlt alt;
+Adafruit_MPL3115A2 mpl;
+HPR::MitchSD sdUtils;
+HPR::MitchLED ledUtils;
+HPR::MitchRelay relayUtils;
 
-int cycles = 0;
-int CYCLE_MAX = 20;
+float starting_alt = 0;
+float current_alt = 0;
+float max_alt = 0;
+bool apogee = false;
+uint16_t apogee_counter = 0;
+
+bool debug = true;
+uint16_t counter = 0;
+uint16_t counter_max = 10;
 
 /***********************************************
  **************** SETUP *************************
@@ -19,55 +27,79 @@ void setup() {
   Serial.begin(9600);
   while (!Serial) delay(10);
 
-  led.initLED();
-  led.blinkFast(1, GREEN);
-  sd.initRTC();
-  sd.initSD();
-  alt.initRelay();
-  //alt.initBNO();
-  //alt.initMPL();
-  alt.initDPS();
+  if (!mpl.begin()) {
+    Serial.println("Could not find MPL sensor. Check wiring.");
+    while(1);
+  }
+  mpl.setMode(MPL3115A2_ALTIMETER);
+  Serial.println("MPL3115A2 OK!");
 
-  alt.STARTING_ALT = alt.readDPSAlt();   
-  delay(500);
+  sdUtils.initRTC();
+  sdUtils.initSD();
+  ledUtils.initLED();
+  relayUtils.initRelay();
 
-  led.blinkFast(3, GREEN);
-  delay(200);
+  starting_alt = mpl.getLastConversionResults(MPL3115A2_ALTITUDE);
+
+  ledUtils.blinkFast(3, GREEN);
 }
 
 /***********************************************
  **************** LOOP *************************
  ***********************************************/
 void loop() {
-  //alt.CURRENT_ALT = alt.readDPSAlt(); // average of last NUMBER_TO_AVERAGE readings
-  alt.CURRENT_ALT = alt.readDPSAlt();
-  alt.RELATIVE_ALT = alt.getRelativeAltAverage();
+  // start a conversion
+  Serial.println("Starting a conversion.");
+  mpl.startOneShot();
 
-  if (cycles < CYCLE_MAX) {
-    //sd.writeDataLineBlocking("Current Alt: " + String(alt.CURRENT_ALT));
-    sd.writeDataLineBlocking("Relative Alt: " + String(alt.RELATIVE_ALT) + " m");
-    cycles++;
-    delay(200);
-    led.blinkFast(1, BLUE);
-  } else if (cycles == CYCLE_MAX) {
-    sd.writeDataLineBlocking("Chute Deployed");
-    sd.closeFile();
-    led.lightOn(RED);
-    alt.deployChute();
-    led.lightOff();
-    while(1);
+  // do something else while waiting
+  Serial.println("Counting number while waiting...");
+  int count = 0;
+  while (!mpl.conversionComplete()) {
+    count++;
+  }
+  Serial.print("Done! Counted to "); Serial.println(count);
+  
+  String ts = sdUtils.getTimeStamp();
+  current_alt = mpl.getLastConversionResults(MPL3115A2_ALTITUDE);
+
+  if (current_alt + 30 < max_alt) {
+    apogee_counter++;
+    apogee = apogee_counter >= 3;
+  } else if (current_alt > max_alt) {
+    max_alt = current_alt;
+    apogee_counter = 0;
   }
 
-  if (alt.CURRENT_ALT > alt.MAX_ALT) {
-    // update max altitude
-    alt.MAX_ALT = alt.CURRENT_ALT;
-  } 
-  // else if (alt.shouldDeployChute()) {
-  //   // chute deployment altitude reached
-  //   alt.deployChute();
-  // }
+  if (apogee) {
+    relayUtils.relayOn(RELAY_IN_2);
+    relayUtils.relayOff(RELAY_IN_2);  
+  }
 
-  alt.printDPSAltitudeData();
-  //printMPLAltitudeData();
-  delay(200);
+  sdUtils.openFile();
+  sdUtils.writeDataLineBlocking(ts + " " + String(current_alt));
+  sdUtils.closeFile();
+
+  ledUtils.blinkFast(1, BLUE);
+
+  // now get results
+  Serial.println(current_alt);
+
+  delay(1000);  
+
+  if (debug) {
+    if (counter == counter_max) {
+      ledUtils.blinkFast(5, MAGENTA);
+
+      relayUtils.relayOn(RELAY_IN_2);
+      relayUtils.relayOff(RELAY_IN_2);
+
+      delay(500);
+      
+      while(1) {
+        delay(5000);
+      }
+    }
+    counter++;
+  }
 }
