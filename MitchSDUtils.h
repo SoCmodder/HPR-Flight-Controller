@@ -2,17 +2,18 @@
 #define MITCH_SD_UTILS_H
 
 #define SD_CS_PIN 10
-#define SD_FILE_NAME "datalog.txt"
+#define SD_FILE_NAME "hpr-log.txt"
 
 namespace HPR {
   class MitchSD {
     public:
+      void initRTC();
+      void initSD();
       void closeFile();
       void openFile();
-      void initRTC();
       void writeLogHeader();
-      void initSD();
       void writeDataLineBlocking(String data);
+      String getTimeStamp();
   };
 }
 

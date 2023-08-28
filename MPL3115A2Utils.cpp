@@ -4,19 +4,20 @@
 
 using namespace HPR;
 
-Adafruit_MPL3115A2 mpl;
+Adafruit_MPL3115A2 sensor;
 
 void MPLUtil::initMPL() {
-  if (!mpl.begin()) {
+  if (!sensor.begin()) {
     Serial.println("Could not find MPL sensor. Check wiring.");
     while(1);
   }
+  sensor.setMode(MPL3115A2_ALTIMETER);
   Serial.println("MPL3115A2 OK!");
   delay(500);
 }
 
 float MPLUtil::readMPLAlt() {
-  return mpl.getAltitude();
+  return sensor.getAltitude();
 }
 
 void MPLUtil::printMPLAltitudeData() {

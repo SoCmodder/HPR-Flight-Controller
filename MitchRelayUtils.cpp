@@ -15,7 +15,6 @@ void MitchRelay::initRelay() {
 **/  
 void MitchRelay::relayOn(int relayPin) {
   digitalWrite(relayPin, LOW);
-  delay(5000);
 }
 
 /** 
@@ -23,5 +22,4 @@ void MitchRelay::relayOn(int relayPin) {
 **/  
 void MitchRelay::relayOff(int relayPin) {
   digitalWrite(relayPin, HIGH);
-  delay(1000);
 }

@@ -8,7 +8,6 @@ using namespace HPR;
 void MitchLED::initLED() {
   pixel.begin();
   Serial.println("LED OK!");
-  delay(500);
 }
 
 /**
