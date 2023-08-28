@@ -47,7 +47,7 @@ void MitchSD::openFile() {
   if (!file) {
     Serial.print("error opening ");
     Serial.println(SD_FILE_NAME);
-    while (1);
+    //while (1);
   }
   delay(200);
 }

@@ -13,6 +13,7 @@ HPR::MitchRelay relayUtils;
 float starting_alt = 0;
 float current_alt = 0;
 float max_alt = 0;
+bool launch_initiated = false;
 bool apogee = false;
 uint16_t apogee_counter = 0;
 
@@ -63,17 +64,17 @@ void loop() {
   String ts = sdUtils.getTimeStamp();
   current_alt = mpl.getLastConversionResults(MPL3115A2_ALTITUDE);
 
-  if (current_alt + 30 < max_alt) {
-    apogee_counter++;
-    apogee = apogee_counter >= 3;
-  } else if (current_alt > max_alt) {
+  if (current_alt > max_alt) {
     max_alt = current_alt;
     apogee_counter = 0;
+  } else if (current_alt + 30 < max_alt) {
+    apogee_counter++;
+    apogee = apogee_counter >= 3;
   }
 
   if (apogee) {
-    relayUtils.relayOn(RELAY_IN_2);
-    relayUtils.relayOff(RELAY_IN_2);  
+    // Turn on relay 2 
+    triggerDeployment();
   }
 
   sdUtils.openFile();
@@ -89,17 +90,23 @@ void loop() {
 
   if (debug) {
     if (counter == counter_max) {
-      ledUtils.blinkFast(5, MAGENTA);
+      ledUtils.blinkFast(10, MAGENTA);
 
-      relayUtils.relayOn(RELAY_IN_2);
-      relayUtils.relayOff(RELAY_IN_2);
+      triggerDeployment();
 
-      delay(500);
-      
       while(1) {
         delay(5000);
       }
     }
     counter++;
   }
+}
+
+void triggerDeployment() {
+  ledUtils.lightOn(RED);
+  relayUtils.relayOn(RELAY_IN_2);
+  delay(5000);
+  ledUtils.lightOff();
+  relayUtils.relayOff(RELAY_IN_2);
+  delay(1000);
 }
