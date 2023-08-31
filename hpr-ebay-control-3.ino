@@ -3,6 +3,10 @@
 #include "MitchLEDUtils.h"
 #include "MitchRelayUtils.h"
 
+#define LAUNCH_INIT_HEIGHT 2  // 2 meters
+#define APOGEE_TRIGGER_DISTANCE 10 // 10 meters
+#define APOGEE_COUNTER_MAX 3
+
 using namespace HPR;
 
 Adafruit_MPL3115A2 mpl;
@@ -17,10 +21,6 @@ bool launch_initiated = false;
 bool apogee = false;
 bool chute_deployed = false;
 uint16_t apogee_counter = 0;
-
-bool debug = false;
-uint16_t counter = 0;
-uint16_t counter_max = 10;
 
 /***********************************************
  **************** SETUP *************************
@@ -54,48 +54,32 @@ void setup() {
  **************** LOOP *************************
  ***********************************************/
 void loop() {
-  if (debug) {
-    if (counter == counter_max) {
-      ledUtils.blinkFast(10, MAGENTA);
-
-      triggerDeployment();
-
-      while (1) {
-        delay(5000);
-      }
-    }
-    counter++;
-  }
-
   getAltReading();
   current_alt = mpl.getLastConversionResults(MPL3115A2_ALTITUDE);
   // if current alt is more than 2 meters above starting, then rocket has launched
-  if (current_alt > starting_alt + 2) {
-    launch_initiated = true;
-  }
-
-  if (launch_initiated) {
-    if (apogee) {
+  if (!launch_initiated) {
+    if (current_alt > starting_alt + LAUNCH_INIT_HEIGHT) {
+      launch_initiated = true;
+    }
+  } else {
+    if (!chute_deployed && apogee) {
       // Turn on relay 2
       triggerDeployment();
       chute_deployed = true;
     }
-
     if (current_alt > max_alt) {
       max_alt = current_alt;
       apogee_counter = 0;
-    } else if (current_alt + 10 < max_alt) {
+    } else if (current_alt + APOGEE_TRIGGER_DISTANCE < max_alt) {
       apogee_counter++;
-      apogee = apogee_counter >= 3;
+      apogee = apogee_counter >= APOGEE_COUNTER_MAX;
     }
-
     String ts = sdUtils.getTimeStamp();
     sdUtils.openFile();
     sdUtils.writeDataLineBlocking(ts + " " + String(current_alt));
     sdUtils.closeFile();
 
     ledUtils.blinkFast(1, BLUE);
-
     // now get results
     Serial.println(current_alt);
 
@@ -105,17 +89,17 @@ void loop() {
 
 void getAltReading() {
   // start a conversion
-  Serial.println("Starting a conversion.");
+  // Serial.println("Starting a conversion.");
   mpl.startOneShot();
 
   // do something else while waiting
-  Serial.println("Counting number while waiting...");
+  // Serial.println("Counting number while waiting...");
   int count = 0;
   while (!mpl.conversionComplete()) {
     count++;
   }
-  Serial.print("Done! Counted to ");
-  Serial.println(count);
+  // Serial.print("Done! Counted to ");
+  // Serial.println(count);
 }
 
 void triggerDeployment() {
