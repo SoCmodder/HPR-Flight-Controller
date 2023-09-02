@@ -1,18 +1,18 @@
 #include <Adafruit_MPL3115A2.h>
 #include "MitchSDUtils.h"
 #include "MitchLEDUtils.h"
-#include "MitchRelayUtils.h"
+//#include "MitchRelayUtils.h"
 
-#define LAUNCH_INIT_HEIGHT 2  // 2 meters
-#define APOGEE_TRIGGER_DISTANCE 10 // 10 meters
-#define APOGEE_COUNTER_MAX 3
+#define LAUNCH_INIT_HEIGHT 2  // 5 meters
+#define APOGEE_TRIGGER_DISTANCE 20 // 25 meters
+#define APOGEE_COUNTER_MAX 2
 
 using namespace HPR;
 
 Adafruit_MPL3115A2 mpl;
 HPR::MitchSD sdUtils;
 HPR::MitchLED ledUtils;
-HPR::MitchRelay relayUtils;
+//HPR::MitchRelay relayUtils;
 
 float starting_alt = 0;
 float current_alt = -10;
@@ -31,8 +31,7 @@ void setup() {
 
   if (!mpl.begin()) {
     Serial.println("Could not find MPL sensor. Check wiring.");
-    while (1)
-      ;
+    while (1);
   }
   mpl.setMode(MPL3115A2_ALTIMETER);
   Serial.println("MPL3115A2 OK!");
@@ -40,7 +39,7 @@ void setup() {
   sdUtils.initRTC();
   sdUtils.initSD();
   ledUtils.initLED();
-  relayUtils.initRelay();
+  // relayUtils.initRelay();
 
   getAltReading();
 
@@ -60,12 +59,16 @@ void loop() {
   if (!launch_initiated) {
     if (current_alt > starting_alt + LAUNCH_INIT_HEIGHT) {
       launch_initiated = true;
+      writeString("launch");
+      delay(200);
     }
   } else {
     if (!chute_deployed && apogee) {
       // Turn on relay 2
       triggerDeployment();
       chute_deployed = true;
+      writeString("deploy");
+      delay(200);
     }
     if (current_alt > max_alt) {
       max_alt = current_alt;
@@ -73,11 +76,11 @@ void loop() {
     } else if (current_alt + APOGEE_TRIGGER_DISTANCE < max_alt) {
       apogee_counter++;
       apogee = apogee_counter >= APOGEE_COUNTER_MAX;
+      writeString("apogee+1");
+      delay(200);
     }
-    String ts = sdUtils.getTimeStamp();
-    sdUtils.openFile();
-    sdUtils.writeDataLineBlocking(ts + " " + String(current_alt));
-    sdUtils.closeFile();
+
+    writeString(String(current_alt));
 
     ledUtils.blinkFast(1, BLUE);
     // now get results
@@ -85,6 +88,13 @@ void loop() {
 
     delay(200);
   }
+}
+
+void writeString(String s) {
+  String ts = sdUtils.getTimeStamp();
+    sdUtils.openFile();
+    sdUtils.writeDataLineBlocking(ts + " " + s);
+    sdUtils.closeFile();  
 }
 
 void getAltReading() {
@@ -103,10 +113,10 @@ void getAltReading() {
 }
 
 void triggerDeployment() {
-  ledUtils.lightOn(RED);
-  relayUtils.relayOn(RELAY_IN_2);
-  delay(5000);
-  ledUtils.lightOff();
-  relayUtils.relayOff(RELAY_IN_2);
-  delay(1000);
+  // ledUtils.lightOn(RED);
+  // relayUtils.relayOn(RELAY_IN_2);
+  // delay(5000);
+  // ledUtils.lightOff();
+  // relayUtils.relayOff(RELAY_IN_2);
+  // delay(1000);
 }
