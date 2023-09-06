@@ -3,7 +3,7 @@
 
 Adafruit_NeoPixel pixel(1, LED_PIN, NEO_RGB + NEO_KHZ800);
 
-using namespace HPR;
+using namespace LED;
 
 void MitchLED::initLED() {
   pixel.begin();
