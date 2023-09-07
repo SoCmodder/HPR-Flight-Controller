@@ -1,10 +1,9 @@
 #include <Adafruit_MPL3115A2.h>
 #include "MitchSDUtils.h"
 #include "MitchLEDUtils.h"
-//#include "MitchRelayUtils.h"
 
-#define LAUNCH_INIT_HEIGHT 2  // 5 meters
-#define APOGEE_TRIGGER_DISTANCE 20 // 25 meters
+#define LAUNCH_INIT_HEIGHT 6
+#define APOGEE_TRIGGER_DISTANCE 6
 #define APOGEE_COUNTER_MAX 2
 
 using namespace HPR;
@@ -12,7 +11,6 @@ using namespace HPR;
 Adafruit_MPL3115A2 mpl;
 HPR::MitchSD sdUtils;
 HPR::MitchLED ledUtils;
-//HPR::MitchRelay relayUtils;
 
 float starting_alt = 0;
 float current_alt = -10;
@@ -39,7 +37,6 @@ void setup() {
   sdUtils.initRTC();
   sdUtils.initSD();
   ledUtils.initLED();
-  // relayUtils.initRelay();
 
   getAltReading();
 
@@ -65,7 +62,7 @@ void loop() {
   } else {
     if (!chute_deployed && apogee) {
       // Turn on relay 2
-      triggerDeployment();
+      // triggerDeployment();
       chute_deployed = true;
       writeString("deploy");
       delay(200);
@@ -99,24 +96,11 @@ void writeString(String s) {
 
 void getAltReading() {
   // start a conversion
-  // Serial.println("Starting a conversion.");
   mpl.startOneShot();
 
   // do something else while waiting
-  // Serial.println("Counting number while waiting...");
   int count = 0;
   while (!mpl.conversionComplete()) {
     count++;
   }
-  // Serial.print("Done! Counted to ");
-  // Serial.println(count);
-}
-
-void triggerDeployment() {
-  // ledUtils.lightOn(RED);
-  // relayUtils.relayOn(RELAY_IN_2);
-  // delay(5000);
-  // ledUtils.lightOff();
-  // relayUtils.relayOff(RELAY_IN_2);
-  // delay(1000);
 }
