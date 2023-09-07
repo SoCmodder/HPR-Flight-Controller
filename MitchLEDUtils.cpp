@@ -25,19 +25,19 @@ uint32_t MitchLED::getPixelColor(MitchColor color) {
   uint32_t c = pixel.Color(0, 0, 0);
   switch(color) {
     case RED: 
-      c = pixel.Color(150, 0, 0);
+      c = pixel.Color(BRIGHTNESS, 0, 0);
       break;
     case GREEN:
-      c = pixel.Color(0, 150, 0);
+      c = pixel.Color(0, BRIGHTNESS, 0);
       break;
     case BLUE:
-      c = pixel.Color(0, 0, 150);
+      c = pixel.Color(0, 0, BRIGHTNESS);
       break;
     case CYAN:
-      c = pixel.Color(0, 150, 150);
+      c = pixel.Color(0, BRIGHTNESS, BRIGHTNESS);
       break;
     case MAGENTA:
-      c = pixel.Color(153, 0, 153);
+      c = pixel.Color(BRIGHTNESS+3, 0, BRIGHTNESS+3);
       break; 
   }
   return c;

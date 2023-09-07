@@ -4,6 +4,7 @@
 #define BLINK_RATE_FAST 100
 #define BLINK_RATE_SLOW 600
 #define LED_PIN 3
+#define BRIGHTNESS 15
 
 enum MitchColor { RED, GREEN, BLUE, CYAN, MAGENTA };
 

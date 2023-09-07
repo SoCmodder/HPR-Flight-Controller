@@ -52,6 +52,7 @@ void setup() {
 void loop() {
   getAltReading();
   current_alt = mpl.getLastConversionResults(MPL3115A2_ALTITUDE);
+  Serial.println(String(current_alt));
   // if current alt is more than 2 meters above starting, then rocket has launched
   if (!launch_initiated) {
     if (current_alt > starting_alt + LAUNCH_INIT_HEIGHT) {
@@ -59,6 +60,7 @@ void loop() {
       writeString("launch");
       delay(200);
     }
+    ledUtils.blinkFast(1, MAGENTA);
   } else {
     if (!chute_deployed && apogee) {
       // Turn on relay 2
@@ -80,8 +82,6 @@ void loop() {
     writeString(String(current_alt));
 
     ledUtils.blinkFast(1, BLUE);
-    // now get results
-    Serial.println(current_alt);
 
     delay(200);
   }
@@ -89,9 +89,9 @@ void loop() {
 
 void writeString(String s) {
   String ts = sdUtils.getTimeStamp();
-    sdUtils.openFile();
-    sdUtils.writeDataLineBlocking(ts + " " + s);
-    sdUtils.closeFile();  
+  sdUtils.openFile();
+  sdUtils.writeDataLineBlocking(ts + " " + s);
+  sdUtils.closeFile();  
 }
 
 void getAltReading() {
