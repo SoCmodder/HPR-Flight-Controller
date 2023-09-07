@@ -2,7 +2,7 @@
 #define MITCH_SD_UTILS_H
 
 #define SD_CS_PIN 10
-#define SD_FILE_NAME "hpr-log.txt"
+#define SD_FILE_NAME "log.txt"
 
 namespace HPR {
   class MitchSD {
