@@ -1,77 +1,77 @@
 #include <SPI.h>
 #include <Adafruit_MPL3115A2.h>
 #include <RTClib.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include <SD.h>
+#include "HPRSensorHelper.h"
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-#define LAUNCH_INIT_HEIGHT 2  // 6 meters or ~20 feet
+#define LAUNCH_INIT_HEIGHT 6  // 6 meters or ~20 feet
 #define APOGEE_TRIGGER_DISTANCE 6 // 6 meters or ~20 feet
 #define APOGEE_COUNTER_MAX 2
 #define PICO_LED_PIN 25
 #define SD_CS_PIN 17
-#define SD_CLOCK_PIN 18
 #define SD_FILE_NAME "hpr-log.txt"
 
 enum FLIGHT_STATUS { IDLE, LAUNCH_INIT, APOGEE, DEPLOY };
 
+using namespace HPR;
+
 Adafruit_MPL3115A2 mpl;
 RTC_DS3231 rtclock;
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+HPR::SensorHelper sensorHelper;
 
 float starting_alt = 0;
 float current_alt = -10;
 float max_alt = 0;
-bool launch_initiated = false;
 bool apogee = false;
 bool chute_deployed = false;
 uint16_t apogee_counter = 0;
 File file;
 FLIGHT_STATUS status = IDLE;
+String fs = "IDLE";
 
 /***********************************************
  **************** SETUP *************************
  ***********************************************/
 void setup() {
   Serial.begin(115200);
-  while (!Serial) delay(10);
   
   initLED();
   initRTC();
   initSD();
   initMPL();
-  initOLED();
+  sensorHelper.initDisplay();//initOLED();
 
   mpl.startOneShot();
   delay(500);
   starting_alt = mpl.getLastConversionResults(MPL3115A2_ALTITUDE);
   current_alt = starting_alt;
+  ledON();
 }
 
 /***********************************************
  **************** LOOP *************************
  ***********************************************/
 void loop() {
+  fs = getFlightStatus();
+
   mpl.startOneShot();
   current_alt = mpl.getLastConversionResults(MPL3115A2_ALTITUDE);
-  drawData(current_alt);
+
+  sensorHelper.drawDisplayData(current_alt, fs);
+  
   // if current alt is more than 2 meters above starting, then rocket has launched
-  if (!launch_initiated) {
-    status = IDLE;
+  if (status == IDLE) {
     if (current_alt > starting_alt + LAUNCH_INIT_HEIGHT) {
-      launch_initiated = true;
-      writeString("launch");
+      status = LAUNCH_INIT;
+      writeString(fs);
+    } else {
+      Serial.println(String(current_alt));
     }
   } else {
-    status = LAUNCH_INIT;
     if (!chute_deployed && apogee) {
       // Turn on relay 2
       // triggerDeployment();
       chute_deployed = true;
-      writeString("deploy");
       status = DEPLOY;
     }
     if (current_alt > max_alt) {
@@ -80,7 +80,9 @@ void loop() {
     } else if (current_alt + APOGEE_TRIGGER_DISTANCE < max_alt) {
       apogee_counter++;
       apogee = apogee_counter >= APOGEE_COUNTER_MAX;
-      writeString("apogee+1");
+      if (apogee) {
+        status = APOGEE;
+      }
     }
 
     writeString(String(starting_alt) + "," + String(current_alt) + "," + String(max_alt));
@@ -89,23 +91,6 @@ void loop() {
     delay(100);
     ledOFF();
   }
-}
-
-void drawData(float alt) {
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  // Time
-  display.setCursor(0, 0);
-  display.println("T:" + getTimeStamp());
-  // Altitude
-  display.setCursor(62, 0);
-  display.println("ALT:" + String(alt));
-  // Flight Status
-  display.setCursor(0, 24);
-  display.println("STATUS:" + getFlightStatus());
-
-  display.display();
 }
 
 void initRTC() {
@@ -204,24 +189,6 @@ void initMPL() {
   }
   mpl.setMode(MPL3115A2_ALTIMETER);
   Serial.println("MPL3115A2 OK!");
-}
-
-void initOLED() {
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-  // Show initial display buffer contents on the screen --
-  // the library initializes this with an Adafruit splash screen.
-  display.display();
-  // Clear the buffer
-  display.clearDisplay();
-  // Draw a single pixel in white
-  display.drawPixel(10, 10, WHITE);
-  // Show the display buffer on the screen. You MUST call display() after
-  // drawing commands to make them visible on screen!
-  display.display();
 }
 
 void ledON() {
