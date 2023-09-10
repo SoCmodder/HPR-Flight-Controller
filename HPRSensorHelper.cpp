@@ -12,6 +12,7 @@ using namespace HPR;
 RTC_DS3231 rtc;
 Adafruit_MPL3115A2 altimeter;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+File file;
 
 /**
   ** DISPLAY **
@@ -32,17 +33,23 @@ void SensorHelper::initDisplay() {
   display.display();
 }
 
-void SensorHelper::drawDisplayData(float altitude, String flightStatus) {
+void SensorHelper::drawDisplayData(int starting_altitude, int current_altitude, int max_altitude, String flight_status) {
   display.clearDisplay();
   // Time
+  display.setCursor(72, 0);
+  display.println(getCurrentTime());
+  // Starting Altitude
   display.setCursor(0, 0);
-  display.println("T:" + getCurrentTime());
-  // Altitude
-  display.setCursor(0, 10);
-  display.println("ALT:" + String(altitude));
+  display.println("S_ALT:" + String(starting_altitude));
+  // Current Altitude
+  display.setCursor(0, 12);
+  display.println("C_ALT:" + String(current_altitude));
+  // Max Altitude
+  display.setCursor(0, 24);
+  display.println("M_ALT:" + String(max_altitude));
   // Flight Status
-  display.setCursor(0, 20);
-  display.println("STATUS:" + flightStatus);
+  display.setCursor(72, 24);
+  display.println(flight_status);
 
   display.display();
 }
@@ -63,15 +70,45 @@ void SensorHelper::initStorage() {
 }
 
 void SensorHelper::openFile() {
-
+  file = SD.open(SD_FILE_NAME, FILE_WRITE);
+  if (!file) {
+    Serial.print("error opening ");
+    Serial.println(SD_FILE_NAME);
+  }
+  delay(100);
 }
 
 void SensorHelper::closeFile() {
-
+  file.close();
+  delay(100);
 }
 
 void SensorHelper::writeLogHeader() {
+  DateTime now = rtc.now();
+  file.println("");
+  file.println("*****");
+  file.print("Log Date: ");
+  file.print(String(now.day()));
+  file.print("/");
+  file.print(String(now.month()));
+  file.print("/");
+  file.print(String(now.year()));
+  file.print(" ");
+  file.print(String(now.hour()));
+  file.print(":");
+  file.print(String(now.minute()));
+  file.print(":");
+  file.print(String(now.second()));
+  file.println("starting_alt, current_alt, max_alt");
+  file.println("*****");
+  delay(200);
+}
 
+void SensorHelper::writeLine(String line) {
+  if(!file.println(line)) {
+    Serial.println("Failed to write data to file...");  
+  }
+  delay(100);
 }
 
 /**
@@ -105,9 +142,18 @@ String SensorHelper::getCurrentTime() {
   ** ALTITUDE **
  */
 void SensorHelper::initAltimeter() {
-
+  if (!altimeter.begin()) {
+    Serial.println("Could not find MPL sensor. Check wiring.");
+    while (1);
+  }
+  altimeter.setMode(MPL3115A2_ALTIMETER);
+  Serial.println("Altimeter OK!");
 }
 
 void SensorHelper::triggerAltitudeUpdate() {
   altimeter.startOneShot();
+}
+
+int SensorHelper::getCurrentAltitude() {
+  return (int) altimeter.getLastConversionResults(MPL3115A2_ALTITUDE) * FEET_PER_METER; // convert to feet  
 }
