@@ -69,6 +69,17 @@ void SensorHelper::initStorage() {
   Serial.println("SD OK!");  
 }
 
+void SensorHelper::initUARTStorage() {
+  pinMode(SD_CS_PIN, OUTPUT);
+  digitalWrite(SD_CS_PIN, HIGH);
+  // Set up our UART with the required speed.
+  uart_init(UART_ID, BAUD_RATE);
+  // Set the TX and RX pins by using the function select on the GPIO
+  // Set datasheet for more information on function select
+  gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+  gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+}
+
 void SensorHelper::openFile() {
   file = SD.open(SD_FILE_NAME, FILE_WRITE);
   if (!file) {
@@ -109,6 +120,12 @@ void SensorHelper::writeLine(String line) {
     Serial.println("Failed to write data to file...");  
   }
   delay(100);
+}
+
+void SensorHelper::writeUARTLine(String line) {
+  digitalWrite(SD_CS_PIN, HIGH);
+  uart_puts(UART_ID, (line + "\n").c_str());
+  digitalWrite(SD_CS_PIN, LOW);
 }
 
 /**
