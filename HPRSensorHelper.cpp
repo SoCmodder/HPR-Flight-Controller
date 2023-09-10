@@ -40,13 +40,13 @@ void SensorHelper::drawDisplayData(int starting_altitude, int current_altitude, 
   display.println(getCurrentTime());
   // Starting Altitude
   display.setCursor(0, 0);
-  display.println("S_ALT:" + String(starting_altitude));
+  display.println("S:" + String(starting_altitude));
   // Current Altitude
   display.setCursor(0, 12);
-  display.println("C_ALT:" + String(current_altitude));
+  display.println("C:" + String(current_altitude));
   // Max Altitude
   display.setCursor(0, 24);
-  display.println("M_ALT:" + String(max_altitude));
+  display.println("M:" + String(max_altitude));
   // Flight Status
   display.setCursor(72, 24);
   display.println(flight_status);
@@ -99,7 +99,7 @@ void SensorHelper::writeLogHeader() {
   file.print(String(now.minute()));
   file.print(":");
   file.print(String(now.second()));
-  file.println("starting_alt, current_alt, max_alt");
+  file.println("timestamp, starting_alt, current_alt, max_alt, flight_status");
   file.println("*****");
   delay(200);
 }

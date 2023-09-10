@@ -68,7 +68,8 @@ void loop() {
       status = apogee_counter >= APOGEE_COUNTER_MAX ? APOGEE : LAUNCH_INIT;
     }
 
-    writeString(String(starting_alt) + "," + String(current_alt) + "," + String(max_alt) + "," + getFlightStatus());
+    //writeString(String(starting_alt) + "," + String(current_alt) + "," + String(max_alt) + "," + getFlightStatus());
+    writeCSVLine(starting_alt, current_alt, max_alt);
 
     sensorHelper.drawDisplayData(starting_alt, current_alt, max_alt, getFlightStatus());
 
@@ -83,8 +84,17 @@ void loop() {
 void writeString(String s) {
   String ts = sensorHelper.getCurrentTime();
   sensorHelper.openFile();
-  sensorHelper.writeLine(ts + " " + s);
+  sensorHelper.writeLine(ts + "," + s);
   sensorHelper.closeFile();  
+}
+
+void writeCSVLine(int starting_alt, int current_alt, int max_alt) {
+  String timestamp = sensorHelper.getCurrentTime();
+  String csvString = timestamp + "," + String(starting_alt) + "," + String(current_alt) + "," + String(max_alt) + "," + getFlightStatus();
+
+  sensorHelper.openFile();
+  sensorHelper.writeLine(csvString);
+  sensorHelper.closeFile();
 }
 
 void initLED() {
