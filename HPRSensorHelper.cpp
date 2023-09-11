@@ -1,4 +1,5 @@
 #include <SPI.h>
+#include <Wire.h>
 #include <Adafruit_MPL3115A2.h>
 #include <RTClib.h>
 #include <Adafruit_GFX.h>
@@ -13,6 +14,18 @@ RTC_DS3231 rtc;
 Adafruit_MPL3115A2 altimeter;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 File file;
+
+void SensorHelper::init() {
+  SPI.setRX(4);
+  SPI.setCS(5);
+  SPI.setSCK(6);
+  SPI.setTX(7);
+  Wire.setSDA(8);
+  Wire.setSCL(9);
+
+  //Wire.begin();
+  //SPI.begin();
+}
 
 /**
   ** DISPLAY **
@@ -69,17 +82,6 @@ void SensorHelper::initStorage() {
   Serial.println("SD OK!");  
 }
 
-void SensorHelper::initUARTStorage() {
-  pinMode(SD_CS_PIN, OUTPUT);
-  digitalWrite(SD_CS_PIN, HIGH);
-  // Set up our UART with the required speed.
-  uart_init(UART_ID, BAUD_RATE);
-  // Set the TX and RX pins by using the function select on the GPIO
-  // Set datasheet for more information on function select
-  gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-  gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-}
-
 void SensorHelper::openFile() {
   file = SD.open(SD_FILE_NAME, FILE_WRITE);
   if (!file) {
@@ -120,12 +122,6 @@ void SensorHelper::writeLine(String line) {
     Serial.println("Failed to write data to file...");  
   }
   delay(100);
-}
-
-void SensorHelper::writeUARTLine(String line) {
-  digitalWrite(SD_CS_PIN, HIGH);
-  uart_puts(UART_ID, (line + "\n").c_str());
-  digitalWrite(SD_CS_PIN, LOW);
 }
 
 /**

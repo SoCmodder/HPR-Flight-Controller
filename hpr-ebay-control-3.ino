@@ -26,12 +26,11 @@ Adafruit_NeoPixel pixel(1, WAVESHARE_LED_PIN, NEO_RGB + NEO_KHZ800);
  ***********************************************/
 void setup() {
   Serial.begin(115200);
-  delay(1000);
-  
-  initLED();
+
+  sensorHelper.init();
+  initWaveShareNeoPixel();
   sensorHelper.initTime();
-  //sensorHelper.initStorage();
-  sensorHelper.initUARTStorage();
+  sensorHelper.initStorage();
   sensorHelper.initAltimeter();
   sensorHelper.initDisplay();
 
@@ -41,7 +40,7 @@ void setup() {
   starting_alt = sensorHelper.getCurrentAltitude();
   current_alt = starting_alt;
 
-  lightOn(MAGENTA);
+  pixelOn(MAGENTA);
 }
 
 /***********************************************
@@ -79,7 +78,7 @@ void loop() {
 
     sensorHelper.drawDisplayData(starting_alt, current_alt, max_alt, getFlightStatus());
 
-    blinkFast(1, BLUE);
+    blinkPixelFast(1, BLUE);
   }
   
   sensorHelper.triggerAltitudeUpdate();
@@ -89,29 +88,28 @@ void writeCSVLine(int starting_alt, int current_alt, int max_alt) {
   String timestamp = sensorHelper.getCurrentTime();
   String csvString = timestamp + "," + String(starting_alt) + "," + String(current_alt) + "," + String(max_alt) + "," + getFlightStatus();
 
-  // sensorHelper.openFile();
-  // sensorHelper.writeLine(csvString);
-  // sensorHelper.closeFile();
-  sensorHelper.writeUARTLine(csvString);
+  sensorHelper.openFile();
+  sensorHelper.writeLine(csvString);
+  sensorHelper.closeFile();
 }
 
-void initLED() {
+void initWaveShareNeoPixel() {
   pixel.begin();
   Serial.println("LED OK!");
 }
 
-void lightOn(MitchColor color) {
+void pixelOn(MitchColor color) {
   uint32_t pColor = getPixelColor(color);
   pixel.setPixelColor(0, pColor);
   pixel.show();
 }
 
-void lightOff() {
+void pixelOff() {
   pixel.clear();
   pixel.show();
 }
 
-void blinkFast(int times, MitchColor color) {
+void blinkPixelFast(int times, MitchColor color) {
   uint32_t pixelColor = getPixelColor(color);
   for(int i=0; i<times; i++) {
     pixel.setPixelColor(0, pixelColor);
@@ -123,7 +121,7 @@ void blinkFast(int times, MitchColor color) {
   }
 }
 
-void blinkSlow(int times, MitchColor color) {
+void blinkPixelSlow(int times, MitchColor color) {
   uint32_t pixelColor = getPixelColor(color);
   for(int i=0; i<times; i++) {
     pixel.setPixelColor(0, pixelColor);
@@ -142,6 +140,7 @@ String getFlightStatus() {
     case LAUNCH_INIT: return "LAUNCH";
     case APOGEE: return "APOGEE";
     case DEPLOY: return "DEPLOY";
+    default: return "IDLE";
   }
 }
 
