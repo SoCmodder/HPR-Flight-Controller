@@ -28,4 +28,4 @@
   GPIO19 -\ 
   GPIO4 - I2C SDA\
   GPIO5 - I2C SCL\
-  ![standard](./assets/rp2040-standard.jpg)\
+  ![standard](./assets/rp2040-standard.png)\
