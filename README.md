@@ -24,8 +24,8 @@
   PIN38 - GND\
   GPIO16 -\
   GPIO17 -\
-  GPIO18 -\ 
-  GPIO19 -\ 
+  GPIO18 -\
+  GPIO19 -\
   GPIO4 - I2C SDA\
   GPIO5 - I2C SCL\
   ![standard](./assets/rp2040-standard.png)\
