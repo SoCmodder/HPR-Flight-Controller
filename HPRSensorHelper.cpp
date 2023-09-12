@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1306.h>
 #include <SD.h>
 #include <arduino.h>
+#include <Adafruit_NeoPixel.h>
 #include "HPRSensorHelper.h"
 
 using namespace HPR;
@@ -14,17 +15,15 @@ RTC_DS3231 rtc;
 Adafruit_MPL3115A2 altimeter;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 File file;
+Adafruit_NeoPixel pixel(1, WAVESHARE_LED_PIN, NEO_RGB + NEO_KHZ800);
 
-void SensorHelper::init() {
+void SensorHelper::initWavesharePico() {
   SPI.setRX(4);
   SPI.setCS(5);
   SPI.setSCK(6);
   SPI.setTX(7);
   Wire.setSDA(8);
   Wire.setSCL(9);
-
-  //Wire.begin();
-  //SPI.begin();
 }
 
 /**
@@ -111,7 +110,7 @@ void SensorHelper::writeLogHeader() {
   file.print(":");
   file.print(String(now.minute()));
   file.print(":");
-  file.print(String(now.second()));
+  file.println(String(now.second()));
   file.println("timestamp, starting_alt, current_alt, max_alt, flight_status");
   file.println("*****");
   delay(200);
@@ -169,4 +168,77 @@ void SensorHelper::triggerAltitudeUpdate() {
 
 int SensorHelper::getCurrentAltitude() {
   return (int) altimeter.getLastConversionResults(MPL3115A2_ALTITUDE) * FEET_PER_METER; // convert to feet  
+}
+
+void SensorHelper::initWaveShareNeoPixel() {
+  pixel.begin();
+  Serial.println("LED OK!");
+}
+
+void SensorHelper::pixelOn(MitchColor color) {
+  uint32_t pColor = getPixelColor(color);
+  pixel.setPixelColor(0, pColor);
+  pixel.show();
+}
+
+void SensorHelper::pixelOff() {
+  pixel.clear();
+  pixel.show();
+}
+
+void SensorHelper::blinkPixelFast(int times, MitchColor color) {
+  uint32_t pixelColor = getPixelColor(color);
+  for(int i=0; i<times; i++) {
+    pixel.setPixelColor(0, pixelColor);
+    pixel.show();
+    delay(BLINK_RATE_FAST);
+    pixel.clear();
+    pixel.show();
+    delay(BLINK_RATE_FAST);
+  }
+}
+
+void SensorHelper::blinkPixelSlow(int times, MitchColor color) {
+  uint32_t pixelColor = getPixelColor(color);
+  for(int i=0; i<times; i++) {
+    pixel.setPixelColor(0, pixelColor);
+    pixel.show();
+    delay(BLINK_RATE_SLOW);
+    pixel.clear();
+    pixel.show();
+    delay(BLINK_RATE_SLOW);
+  }
+}
+
+/**
+  ********************
+    Color = [R, G, B]
+  ********************
+  Yellow = 150, 150, 0
+  Cyan = 0, 150, 150
+  Purple = 150, 0, 150
+  White = 150, 150, 150  
+  Magenta = 153, 0, 153
+  Orange = 255, 128, 0
+*/
+uint32_t SensorHelper::getPixelColor(MitchColor color) {
+  uint32_t c = pixel.Color(0, 0, 0);
+  switch(color) {
+    case RED: 
+      c = pixel.Color(150, 0, 0);
+      break;
+    case GREEN:
+      c = pixel.Color(0, 150, 0);
+      break;
+    case BLUE:
+      c = pixel.Color(0, 0, 150);
+      break;
+    case CYAN:
+      c = pixel.Color(0, 150, 150);
+      break;
+    case MAGENTA:
+      c = pixel.Color(153, 0, 153);
+      break; 
+  }
+  return c;
 }

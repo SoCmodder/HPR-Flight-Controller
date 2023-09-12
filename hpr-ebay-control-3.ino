@@ -1,17 +1,12 @@
 #include "HPRSensorHelper.h"
-#include <Adafruit_NeoPixel.h>
 
 #define LAUNCH_INIT_HEIGHT 20  //20 feet
 #define APOGEE_TRIGGER_DISTANCE 20 //20 feet
 #define APOGEE_COUNTER_MAX 2
-#define WAVESHARE_LED_PIN 16
-#define BLINK_RATE_FAST 100
-#define BLINK_RATE_SLOW 600
 
 using namespace HPR;
 
 enum FLIGHT_STATUS { IDLE, LAUNCH_INIT, APOGEE, DEPLOY };
-enum MitchColor { RED, GREEN, BLUE, CYAN, MAGENTA };
 int starting_alt = 0;
 int current_alt = 0;
 int max_alt = 0;
@@ -19,7 +14,6 @@ uint16_t apogee_counter = 0;
 FLIGHT_STATUS status = IDLE;
 
 HPR::SensorHelper sensorHelper;
-Adafruit_NeoPixel pixel(1, WAVESHARE_LED_PIN, NEO_RGB + NEO_KHZ800);
 
 /***********************************************
  **************** SETUP *************************
@@ -27,8 +21,8 @@ Adafruit_NeoPixel pixel(1, WAVESHARE_LED_PIN, NEO_RGB + NEO_KHZ800);
 void setup() {
   Serial.begin(115200);
 
-  sensorHelper.init();
-  initWaveShareNeoPixel();
+  sensorHelper.initWavesharePico();
+  sensorHelper.initWaveShareNeoPixel();
   sensorHelper.initTime();
   sensorHelper.initStorage();
   sensorHelper.initAltimeter();
@@ -40,7 +34,7 @@ void setup() {
   starting_alt = sensorHelper.getCurrentAltitude();
   current_alt = starting_alt;
 
-  pixelOn(MAGENTA);
+  sensorHelper.pixelOn(MAGENTA);
 }
 
 /***********************************************
@@ -78,7 +72,7 @@ void loop() {
 
     sensorHelper.drawDisplayData(starting_alt, current_alt, max_alt, getFlightStatus());
 
-    blinkPixelFast(1, BLUE);
+    sensorHelper.blinkPixelFast(1, BLUE);
   }
   
   sensorHelper.triggerAltitudeUpdate();
@@ -93,46 +87,6 @@ void writeCSVLine(int starting_alt, int current_alt, int max_alt) {
   sensorHelper.closeFile();
 }
 
-void initWaveShareNeoPixel() {
-  pixel.begin();
-  Serial.println("LED OK!");
-}
-
-void pixelOn(MitchColor color) {
-  uint32_t pColor = getPixelColor(color);
-  pixel.setPixelColor(0, pColor);
-  pixel.show();
-}
-
-void pixelOff() {
-  pixel.clear();
-  pixel.show();
-}
-
-void blinkPixelFast(int times, MitchColor color) {
-  uint32_t pixelColor = getPixelColor(color);
-  for(int i=0; i<times; i++) {
-    pixel.setPixelColor(0, pixelColor);
-    pixel.show();
-    delay(BLINK_RATE_FAST);
-    pixel.clear();
-    pixel.show();
-    delay(BLINK_RATE_FAST);
-  }
-}
-
-void blinkPixelSlow(int times, MitchColor color) {
-  uint32_t pixelColor = getPixelColor(color);
-  for(int i=0; i<times; i++) {
-    pixel.setPixelColor(0, pixelColor);
-    pixel.show();
-    delay(BLINK_RATE_SLOW);
-    pixel.clear();
-    pixel.show();
-    delay(BLINK_RATE_SLOW);
-  }
-}
-
 // enum FLIGHT_STATUS { IDLE, LAUNCH_INIT, APOGEE, DEPLOY };
 String getFlightStatus() {
   switch (status) {
@@ -142,37 +96,4 @@ String getFlightStatus() {
     case DEPLOY: return "DEPLOY";
     default: return "IDLE";
   }
-}
-
-/**
-  ********************
-    Color = [R, G, B]
-  ********************
-  Yellow = 150, 150, 0
-  Cyan = 0, 150, 150
-  Purple = 150, 0, 150
-  White = 150, 150, 150  
-  Magenta = 153, 0, 153
-  Orange = 255, 128, 0
-*/
-uint32_t getPixelColor(MitchColor color) {
-  uint32_t c = pixel.Color(0, 0, 0);
-  switch(color) {
-    case RED: 
-      c = pixel.Color(150, 0, 0);
-      break;
-    case GREEN:
-      c = pixel.Color(0, 150, 0);
-      break;
-    case BLUE:
-      c = pixel.Color(0, 0, 150);
-      break;
-    case CYAN:
-      c = pixel.Color(0, 150, 150);
-      break;
-    case MAGENTA:
-      c = pixel.Color(153, 0, 153);
-      break; 
-  }
-  return c;
 }
