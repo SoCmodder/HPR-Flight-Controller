@@ -17,7 +17,7 @@
   GPIO7 - SPI MOSI\
   GPIO8 - I2C SDA\
   GPIO9 - I2C SCL\
-  ![waveshare]("/assets/rp2040-waveshare.jpg") \
+  ![waveshare]("./assets/rp2040-waveshare.jpg") \
 
   **Standard PICO Pins**:\
   PIN39 - VSYS\
@@ -28,4 +28,4 @@
   GPIO19 -\ 
   GPIO4 - I2C SDA\
   GPIO5 - I2C SCL\
-  ![standard]("/assets/rp2040-standard.jpg")\
+  ![standard]("./assets/rp2040-standard.jpg")\
