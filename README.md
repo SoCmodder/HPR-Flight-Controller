@@ -22,10 +22,10 @@
   **Standard PICO Pins**:\
   PIN39 - VSYS\
   PIN38 - GND\
-  GPIO16 -\
-  GPIO17 -\
-  GPIO18 -\
-  GPIO19 -\
+  GPIO16 - SPI MISO\
+  GPIO17 - SPI CS\
+  GPIO18 - SPI SCK\
+  GPIO19 - SPI MOSI\
   GPIO4 - I2C SDA\
   GPIO5 - I2C SCL\
   ![standard](./assets/rp2040-standard.png)\

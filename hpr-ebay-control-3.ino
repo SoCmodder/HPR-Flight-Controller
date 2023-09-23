@@ -1,7 +1,7 @@
 #include "HPRSensorHelper.h"
 
-#define LAUNCH_INIT_HEIGHT 20  //20 feet
-#define APOGEE_TRIGGER_DISTANCE 20 //20 feet
+#define LAUNCH_INIT_HEIGHT 30 //feet
+#define APOGEE_TRIGGER_DISTANCE 20 //feet
 #define APOGEE_COUNTER_MAX 2
 
 using namespace HPR;
@@ -14,6 +14,8 @@ uint16_t apogee_counter = 0;
 FLIGHT_STATUS status = IDLE;
 
 HPR::SensorHelper sensorHelper;
+
+bool debug = false;
 
 /***********************************************
  **************** SETUP *************************
@@ -35,6 +37,11 @@ void setup() {
   current_alt = starting_alt;
 
   sensorHelper.pixelOn(MAGENTA);
+
+  // If debug flag is set to true. Skip IDLE and go straight to LAUNCH_INIT
+  if (debug == true) {
+    status = LAUNCH_INIT;
+  }
 }
 
 /***********************************************
@@ -51,7 +58,6 @@ void loop() {
       status = LAUNCH_INIT;
     } else {
       // if rocket goes lower before launch, reset the starting altitude
-      starting_alt = current_alt < starting_alt ? current_alt : starting_alt;
       Serial.println(String(current_alt));
     }
   } else {
