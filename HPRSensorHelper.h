@@ -31,7 +31,7 @@ namespace HPR {
       
       void initAltimeter();
       void triggerAltitudeUpdate();
-      int getCurrentAltitude();
+      int getCurrentAltitudeMeters();
 
       void initWaveShareNeoPixel();
       void pixelOn(MitchColor color);

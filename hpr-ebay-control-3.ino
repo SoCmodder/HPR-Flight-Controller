@@ -1,7 +1,7 @@
 #include "HPRSensorHelper.h"
 
-#define LAUNCH_INIT_HEIGHT 30 //feet
-#define APOGEE_TRIGGER_DISTANCE 20 //feet
+#define LAUNCH_INIT_HEIGHT 3
+#define APOGEE_TRIGGER_DISTANCE 5
 #define APOGEE_COUNTER_MAX 2
 
 using namespace HPR;
@@ -33,7 +33,7 @@ void setup() {
   sensorHelper.triggerAltitudeUpdate();
   delay(500);
 
-  starting_alt = sensorHelper.getCurrentAltitude();
+  starting_alt = sensorHelper.getCurrentAltitudeMeters();
   current_alt = starting_alt;
 
   sensorHelper.pixelOn(MAGENTA);
@@ -48,11 +48,11 @@ void setup() {
  **************** LOOP *************************
  ***********************************************/
 void loop() {
-  current_alt = sensorHelper.getCurrentAltitude();
+  current_alt = sensorHelper.getCurrentAltitudeMeters();
 
   sensorHelper.drawDisplayData(starting_alt, current_alt, max_alt, getFlightStatus());
   
-  // if current alt is more than 20 feet above starting, then rocket has launched
+  // if current alt is more than specific height above starting, then rocket has launched
   if (status == IDLE) {
     if (current_alt > starting_alt + LAUNCH_INIT_HEIGHT) {
       status = LAUNCH_INIT;

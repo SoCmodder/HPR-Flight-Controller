@@ -52,13 +52,13 @@ void SensorHelper::drawDisplayData(int starting_altitude, int current_altitude, 
   display.println(getCurrentTime());
   // Starting Altitude
   display.setCursor(0, 0);
-  display.println("S:" + String(starting_altitude));
+  display.println("S:" + String(starting_altitude) + "m");
   // Current Altitude
   display.setCursor(0, 12);
-  display.println("C:" + String(current_altitude));
+  display.println("C:" + String(current_altitude) + "m");
   // Max Altitude
   display.setCursor(0, 24);
-  display.println("M:" + String(max_altitude));
+  display.println("M:" + String(max_altitude) + "m");
   // Flight Status
   display.setCursor(72, 24);
   display.println(flight_status);
@@ -166,8 +166,8 @@ void SensorHelper::triggerAltitudeUpdate() {
   altimeter.startOneShot();
 }
 
-int SensorHelper::getCurrentAltitude() {
-  return (int) altimeter.getLastConversionResults(MPL3115A2_ALTITUDE) * FEET_PER_METER; // convert to feet  
+int SensorHelper::getCurrentAltitudeMeters() {
+  return (int) altimeter.getLastConversionResults(MPL3115A2_ALTITUDE);
 }
 
 void SensorHelper::initWaveShareNeoPixel() {
